@@ -1,0 +1,733 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>China 2026</title>
+<style>
+:root{
+  --bg:#f4f1ea;--paper:#fffdf9;--ink:#20211f;--muted:#77766f;--line:#e5e0d6;
+  --red:#d15b43;--soft:#fae9e4;--green:#3f7560;--greenbg:#e7f0eb;--blue:#4d78a8;--bluebg:#e8eef7;--gold:#b48735;--goldbg:#f7efdd;--violet:#806aa8;
+  --amber:#986d20;--amberbg:#f6efdf;--shadow:0 14px 40px rgba(39,35,28,.08)
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;line-height:1.48}
+button{font:inherit}
+.top{background:#1d201e;color:#fff;padding:25px 24px 23px}
+.topin{max-width:1180px;margin:auto;display:flex;justify-content:space-between;align-items:end;gap:20px}
+.ey{font-size:10px;letter-spacing:.19em;color:#aaa;text-transform:uppercase;font-weight:800}
+.top h1{font-size:31px;line-height:1.05;margin:6px 0 7px;letter-spacing:-.025em}
+.top p{margin:0;color:#b8b7b1;font-size:13px}
+main{max-width:1180px;margin:auto;padding:18px}
+.summary{display:grid;grid-template-columns:1.45fr .72fr .72fr;gap:10px;margin-bottom:12px}
+.box{background:rgba(255,253,249,.95);border:1px solid var(--line);border-radius:14px;padding:13px 15px}
+.box b{display:block;margin-bottom:3px}.route{font-weight:750;font-size:14px}.route span{color:#bbb;margin:0 5px}.label{font-size:9px;text-transform:uppercase;letter-spacing:.1em;color:#8b8982;font-weight:850}
+.mapwrap{background:var(--paper);border:1px solid var(--line);border-radius:18px;overflow:hidden;box-shadow:var(--shadow)}
+.maphead{padding:15px 18px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:12px}
+.maphead h2{margin:0;font-size:18px;letter-spacing:-.01em}.maphead p{margin:2px 0 0;color:#88857d;font-size:12px}
+.maphead .label{background:#f1eee7;padding:6px 9px;border-radius:999px;white-space:nowrap}
+.map{height:540px;position:relative;background:
+  radial-gradient(ellipse at 45% 35%,rgba(255,255,255,.9),transparent 55%),
+  linear-gradient(135deg,#edf3f4 0%,#e8eff0 100%);
+overflow:hidden}
+.map:before{content:"";position:absolute;inset:0;opacity:.34;background:
+  repeating-linear-gradient(0deg,transparent 0 52px,rgba(75,97,102,.045) 53px),
+  repeating-linear-gradient(90deg,transparent 0 62px,rgba(75,97,102,.035) 63px);
+pointer-events:none}
+.map:after{content:"MAPPA · ITINERARIO";position:absolute;right:14px;bottom:12px;font-size:9px;letter-spacing:.11em;font-weight:850;color:#6e7c80;background:rgba(255,253,249,.88);padding:7px 9px;border-radius:999px;border:1px solid rgba(80,90,90,.14);z-index:8}
+.mapcontrols{position:absolute;right:14px;top:14px;z-index:9;display:flex;align-items:center;gap:4px;padding:4px;background:rgba(255,253,249,.92);border:1px solid rgba(80,75,66,.13);border-radius:12px;box-shadow:0 6px 20px rgba(45,42,36,.12);backdrop-filter:blur(8px)}
+.mapcontrols button{width:34px;height:32px;border:0;background:transparent;color:#363834;border-radius:8px;font-size:18px;font-weight:500;cursor:pointer;line-height:1}
+.mapcontrols button:hover{background:#efebe3}
+.mapcontrols .mapreset{font-size:9px;letter-spacing:.08em;font-weight:850;text-transform:uppercase;padding:0 8px;width:auto;color:#77746d}
+.mapcontrols .mapzoom{font-variant-numeric:tabular-nums}
+.maphint{position:absolute;right:14px;top:58px;z-index:8;background:rgba(255,253,249,.82);border:1px solid rgba(80,75,66,.10);border-radius:999px;padding:5px 8px;font-size:9px;color:#77746d;opacity:.9;pointer-events:none}
+.mapviewport{position:absolute;inset:0;overflow:hidden}
+.mapstage{position:absolute;inset:0;width:100%;height:100%;transform:scale(1.68);transform-origin:60% 59%;transition:transform .28s cubic-bezier(.2,.7,.2,1)}
+.mapimage{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;z-index:1}
+.mapimage img{width:100%;height:100%;object-fit:fill;display:block;opacity:.64;filter:saturate(.45) contrast(.92)}
+.mapgrid{position:absolute;inset:0;width:100%;height:100%;z-index:3;pointer-events:none}
+.route-main{fill:none;stroke:#c95740;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round;opacity:.86}
+.route-flight{fill:none;stroke:#718087;stroke-width:2.1;stroke-linecap:round;stroke-dasharray:5 7;opacity:.68}
+.route-flight-arrow{fill:none;stroke:#718087;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;opacity:.72}.route-train{fill:none;stroke:#b43a32;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round;opacity:.86}
+.route-arrow{fill:none;stroke:#c95740;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;opacity:.82}
+.flight-arrow{stroke:#718087;stroke-width:1.8;opacity:.65}
+
+.route-node{fill:#fffdf9;stroke:#c95740;stroke-width:2.5}
+.route-node.flight{stroke:#657b82}
+.route-label{display:none}
+.citybtn{position:absolute;transform:translate(-50%,-50%);border:0;background:none;cursor:pointer;text-align:center;color:var(--ink);font-weight:800;z-index:6;padding:0;min-width:0;width:24px;height:24px}
+.citybtn .dot{width:21px;height:21px;background:var(--red);border:4px solid #fff;border-radius:50%;margin:0;box-shadow:0 3px 12px rgba(45,54,54,.24);transition:transform .18s,box-shadow .18s}
+.citybtn small{position:absolute;display:block;background:transparent;border:0;border-radius:0;padding:0;box-shadow:none;font-size:10px;line-height:1.15;white-space:nowrap;font-weight:850;color:#30332f;text-shadow:0 1px 0 rgba(255,253,249,.72),1px 0 0 rgba(255,253,249,.72),-1px 0 0 rgba(255,253,249,.72),0 -1px 0 rgba(255,253,249,.72)}
+.citybtn:hover .dot,.citybtn:focus .dot{transform:scale(1.15);box-shadow:0 5px 18px rgba(45,54,54,.30)}
+.chengdu{left:49.9%;top:69.8%}.chengdu .dot{background:#d15b43}.chengdu small{left:50%;top:-22px;transform:translateX(-50%)}
+.zhang{left:60.3%;top:73.3%}.zhang .dot{background:#b48735}.zhang small{left:50%;top:-22px;transform:translateX(-50%)}
+.chong{left:54.5%;top:72.6%}.chong .dot{background:#4d78a8}.chong small{left:50%;top:27px;transform:translateX(-50%)}
+.xian{left:57.8%;top:59.8%}.xian .dot{background:#806aa8}.xian small{left:50%;top:-22px;transform:translateX(-50%)}
+.beijing{left:70%;top:44.4%}.beijing .dot{background:#3f7560}.beijing small{left:50%;top:-22px;transform:translateX(-50%)}
+.legend{position:absolute;bottom:13px;left:14px;background:rgba(255,253,249,.9);border:1px solid rgba(80,75,66,.12);padding:8px 10px;border-radius:10px;font-size:10px;color:#626965;z-index:7}
+.routekey{position:absolute;top:12px;left:14px;background:rgba(255,253,249,.9);border:1px solid rgba(80,75,66,.12);padding:8px 10px;border-radius:10px;font-size:10px;color:#626965;z-index:7;line-height:1.5}
+.routekey b{color:#303735}
+
+.modal{position:fixed;inset:0;background:rgba(20,24,22,.56);backdrop-filter:blur(5px);z-index:50;display:none;align-items:center;justify-content:center;padding:22px}
+.modal.open{display:flex}
+.panel{width:min(1040px,96vw);max-height:92vh;background:var(--paper);border:1px solid rgba(30,30,25,.12);border-radius:22px;box-shadow:0 28px 90px rgba(0,0,0,.28);overflow:hidden;display:flex;flex-direction:column}
+.phead{padding:22px 25px 17px;border-bottom:1px solid var(--line);background:linear-gradient(135deg,#fffdf9,#f7f3eb)}
+.pheadrow{display:flex;justify-content:space-between;align-items:flex-start;gap:18px}
+.phead h2{margin:5px 0 3px;font-size:28px;letter-spacing:-.03em}.phead p{margin:0;color:var(--muted);font-size:13px}
+.close{width:40px;height:40px;border:1px solid var(--line);border-radius:50%;background:#fffdf9;color:#4c4d49;font-size:25px;line-height:1;cursor:pointer}
+.close:hover{background:#f1eee7}
+.tabs{display:flex;gap:5px;padding:10px 15px;border-bottom:1px solid var(--line);background:#fbf9f4;overflow-x:auto}
+.tabs button{border:0;background:transparent;color:#74736d;font-size:12px;font-weight:800;padding:9px 12px;border-radius:9px;cursor:pointer;white-space:nowrap}
+.tabs button:hover{background:#f0ede6;color:var(--ink)}
+.tabs button.active{background:var(--ink);color:#fff}
+.pbody{padding:20px;overflow:auto}
+.ctab{display:none}.ctab.active{display:block}
+.cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.mini{background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px}
+.mini h4{margin:7px 0 5px;font-size:15px}.mini p{margin:6px 0 0;color:#5f615d;font-size:12px;line-height:1.55}
+.addr{font-size:11px;color:#555a56;font-weight:700;line-height:1.45}.cn{font-size:11px;color:#8a8982;margin-top:3px}
+.tag{display:inline-block;padding:4px 7px;border-radius:999px;font-size:9px;font-weight:850;letter-spacing:.04em}
+.tag.ok{background:var(--greenbg);color:var(--green)}.tag.free{background:#f1eee7;color:#696861}.tag.todo{background:var(--goldbg);color:#86621f}
+.check{margin-top:12px}.check h3{margin:0 0 8px;font-size:15px}
+.trow{display:grid;grid-template-columns:76px 130px 1fr;gap:10px;padding:10px 0;border-bottom:1px solid var(--line);font-size:12px}
+.trow .time{font-weight:850;color:#77746d}.cityname{font-weight:800}
+@media(max-width:760px){
+  .top{padding:20px 16px}.topin{display:block}.top h1{font-size:27px}
+  main{padding:12px}.summary,.bottom,.cards{grid-template-columns:1fr}
+  .summary .box:not(:first-child){display:none}
+  .map{height:455px}.mapstage{transform:scale(1.52);transform-origin:60% 59%}.citybtn small{font-size:10px;padding:4px 6px}.routekey{font-size:9px;max-width:72%}
+  .mapcontrols{right:10px;top:10px}.mapcontrols button{width:32px;height:30px}.mapcontrols .mapreset{padding:0 6px}.maphint{display:none}
+  .maphead{padding:13px 14px}.maphead .label{display:none}
+  .trow{grid-template-columns:60px 88px 1fr;font-size:11px}
+  .legend{max-width:58%;line-height:1.35}
+  .citybtn small{font-size:9px;padding:0}
+  .modal{padding:8px}.panel{width:96vw;height:94vh;max-height:94vh;border-radius:16px}.pbody{padding:12px}.cards{grid-template-columns:1fr}
+}
+
+/* --- MAP CLEANUP --- */
+.mapstage .route-label{display:none}
+.routekey{top:14px;left:14px;padding:7px 10px;border-radius:999px;font-size:9px;line-height:1.25}
+.legend{bottom:14px;left:14px;padding:7px 10px;border-radius:999px;font-size:9px;line-height:1.25}
+.citybtn{min-width:0;padding:4px}
+.citybtn small{font-size:10px;padding:5px 8px;border-radius:8px;box-shadow:0 2px 10px rgba(50,48,43,.10)}
+.mapcontrols{box-shadow:0 5px 18px rgba(45,42,36,.10)}
+
+
+.chengdu small{left:50%;top:-22px;transform:translateX(-50%)}
+.zhang small{left:50%;top:-22px;transform:translateX(-50%)}
+.chong small{left:50%;top:27px;transform:translateX(-50%)}
+.xian small{left:50%;top:-22px;transform:translateX(-50%)}
+.beijing small{left:50%;top:-22px;transform:translateX(-50%)}
+
+/* --- TRIP DASHBOARD --- */
+.bottom{
+  display:grid;
+  grid-template-columns:minmax(0,1.55fr) minmax(280px,.72fr);
+  gap:12px;
+  margin-top:12px;
+  align-items:start;
+}
+.timeline,.check{
+  background:var(--paper);
+  border:1px solid var(--line);
+  border-radius:18px;
+  box-shadow:var(--shadow);
+  overflow:hidden;
+}
+.timeline{padding:17px 18px 10px}
+.timeline-head,.check-head{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-end;
+  gap:12px;
+  margin-bottom:12px;
+}
+.timeline h3,.check h3{
+  margin:0;
+  font-size:17px;
+  letter-spacing:-.02em;
+}
+.section-note{
+  color:#929087;
+  font-size:10px;
+  text-transform:uppercase;
+  letter-spacing:.08em;
+  font-weight:800;
+}
+.timeline-list{
+  display:grid;
+  gap:7px;
+}
+.trow{
+  display:grid;
+  grid-template-columns:62px 145px 1fr;
+  gap:12px;
+  align-items:center;
+  padding:11px 10px;
+  border:1px solid transparent;
+  border-radius:12px;
+  font-size:11px;
+  background:#faf8f3;
+}
+.trow:nth-child(even){background:#f7f4ed}
+.trow:last-child{margin-bottom:0}
+.trow .time{
+  font-size:10px;
+  font-weight:900;
+  color:#858178;
+  letter-spacing:.03em;
+}
+.cityname{
+  font-size:12px;
+  font-weight:850;
+}
+.trow>div:last-child{
+  color:#666761;
+  line-height:1.45;
+}
+.trow b{color:#343733}
+.check{
+  padding:17px;
+  position:sticky;
+  top:12px;
+}
+.check-head{margin-bottom:10px}
+.check-progress{
+  display:inline-flex;
+  align-items:center;
+  gap:5px;
+  background:#f0eee7;
+  color:#77736b;
+  padding:5px 8px;
+  border-radius:999px;
+  font-size:9px;
+  font-weight:850;
+}
+#quickcheck{
+  display:grid;
+  gap:6px;
+}
+.checkline{
+  display:flex;
+  align-items:center;
+  gap:9px;
+  min-height:38px;
+  padding:8px 9px;
+  background:#faf8f3;
+  border-radius:10px;
+  border:1px solid transparent;
+  transition:background .15s,border-color .15s;
+}
+.checkline:hover{background:#f4f0e8;border-color:#e4ded3}
+.checkline input{
+  appearance:none;
+  width:17px;
+  height:17px;
+  margin:0;
+  flex:0 0 17px;
+  border:1.5px solid #c9c3b8;
+  border-radius:5px;
+  background:#fffdf9;
+  cursor:pointer;
+}
+.checkline input:checked{
+  background:var(--green);
+  border-color:var(--green);
+  position:relative;
+}
+.checkline input:checked:after{
+  content:"✓";
+  color:#fff;
+  font-size:11px;
+  font-weight:900;
+  position:absolute;
+  left:3px;
+  top:-1px;
+}
+.checkline label{
+  font-size:11px;
+  color:#555752;
+  cursor:pointer;
+}
+@media(max-width:760px){
+  .bottom{grid-template-columns:1fr}
+  .check{position:static}
+  .timeline{padding:15px 12px 9px}
+  .check{padding:15px}
+  .trow{grid-template-columns:55px 92px 1fr;gap:8px;padding:10px 8px;font-size:10px}
+  .cityname{font-size:11px}
+  .section-note{font-size:8px}
+  .timeline h3,.check h3{font-size:16px}
+  .routekey{max-width:48%}
+  .legend{max-width:42%}
+}
+
+
+/* --- MOBILE POLISH --- */
+html,body{width:100%;max-width:100%;overflow-x:hidden}
+@media (max-width:760px){
+  body{font-size:15px}
+  .top{padding:18px 14px 17px}
+  .top h1{font-size:24px;line-height:1.08}
+  .top p{font-size:12px}
+  main{width:100%;padding:10px}
+  .summary{display:block;margin-bottom:10px}
+  .summary .box{padding:11px 13px}
+  .summary .box:not(:first-child){display:none}
+
+  .mapwrap{border-radius:15px}
+  .maphead{padding:12px 13px}
+  .maphead h2{font-size:16px}
+  .maphead p{font-size:11px}
+  .map{height:430px}
+  .mapstage{transform:scale(1.16);transform-origin:50% 57%}
+  .mapimage img{object-fit:fill}
+  .citybtn{width:22px;height:22px;padding:0}
+  .citybtn .dot{width:18px;height:18px;border-width:3px}
+  .citybtn small{font-size:9px;line-height:1.1;padding:0;box-shadow:none}
+  .chengdu small,.zhang small,.xian small,.beijing small{top:-19px}
+  .chong small{top:23px}
+  .routekey{top:10px;left:10px;font-size:8px;max-width:64%;padding:6px 8px}
+  .legend{bottom:10px;left:10px;font-size:8px;max-width:55%;padding:6px 8px}
+  .mapcontrols{right:9px;top:9px}
+  .mapcontrols button{width:30px;height:29px}
+  .mapcontrols .mapreset{font-size:8px;padding:0 5px}
+
+  .bottom{display:block;margin-top:10px}
+  .timeline,.check{border-radius:15px}
+  .timeline{padding:13px 13px 8px}
+  .check{margin-top:10px}
+  .trow{grid-template-columns:52px 78px minmax(0,1fr);gap:7px;font-size:10.5px}
+  .trow .time{font-size:10px}
+
+  .modal{padding:0;align-items:stretch}
+  .panel{width:100vw;height:100dvh;max-height:none;border:0;border-radius:0}
+  .phead{padding:16px 15px 12px}
+  .phead h2{font-size:22px}
+  .phead p{font-size:12px}
+  .close{width:36px;height:36px;font-size:22px}
+  .tabs{padding:7px 9px;gap:3px}
+  .tabs button{font-size:11px;padding:8px 9px}
+  .pbody{padding:10px}
+  .cards{grid-template-columns:1fr;gap:9px}
+  .mini{padding:12px}
+  .mini h4{font-size:14px}
+  .mini p{font-size:11.5px}
+  .addr,.cn{font-size:10.5px}
+
+  /* Prevent long Chinese/English addresses from forcing horizontal overflow */
+  .mini,.pbody,.ctab,.cards,.trow{min-width:0}
+  .addr,.cn,.mini p{overflow-wrap:anywhere;word-break:break-word}
+}
+
+</style>
+</head>
+<body>
+<header class="top"><div class="topin"><div><div class="ey">14 → 29 ottobre 2026</div><h1>🇨🇳 China Trip</h1><p>Il viaggio completo in una sola pagina</p></div></div></header>
+<main>
+<div class="summary">
+<div class="box"><div class="label">Route</div><div class="route">Chengdu <span>→</span> Zhangjiajie <span>→</span> Chongqing <span>→</span> Xi'an <span>→</span> Beijing</div></div>
+<div class="box"><div class="label">14 ottobre</div><b>Orte → Fiumicino → Beijing</b><span class="small">15:29 · 20:30</span></div>
+<div class="box"><div class="label">15 ottobre</div><b>Beijing → Chengdu</b><span class="small">12:45 · 14:15 → 17:15</span></div>
+</div>
+<div class="mapwrap">
+<div class="maphead"><div><h2>Il viaggio, a colpo d’occhio</h2><p>5 tappe · clicca una città per aprire tutto il viaggio.</p></div><div class="label">14 → 29 OTT · 2026</div></div>
+<div class="map">
+<div class="mapviewport">
+<div class="mapstage">
+<div class="mapimage">
+  <img src="https://simplemaps.com/static/svg/country/cn/admin1/cn.svg" alt="Mappa geografica della Cina con confini amministrativi">
+</div>
+<svg class="mapgrid" viewBox="0 0 1000 540" preserveAspectRatio="none" aria-hidden="true">
+  <defs>
+    <marker id="train-arrow" viewBox="0 0 10 10" refX="10" refY="5"
+            markerWidth="5" markerHeight="5" markerUnits="userSpaceOnUse"
+            orient="auto">
+      <path d="M2 1 L10 5 L2 9" fill="none" stroke="#b43a32"
+            stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+  </defs>
+  <path class="route-flight" d="M700 240 Q655 185 600 190 Q540 198 510 285 Q500 325 499 377"/>
+  <path class="route-flight-arrow" d="M505 308.956 L508.811 301.491 M505 308.956 L503.882 300.650"/>
+  <path class="route-train"
+        d="M499 377 C495 440 540 485 596 405"/>
+  <path class="route-train"
+        d="M603 396 C585 370 565 370 545 392"/>
+  <path class="route-train"
+        d="M545 392 C550 360 555 335 578 323"/>
+  <path class="route-train"
+        d="M578 323 C620 285 665 260 700 240"/>
+
+  <!-- Direction chevrons, anchored on the actual Bézier trajectories -->
+  <path d="M520 442.0 L530 447.2" stroke="none" fill="none" marker-end="url(#train-arrow)"/>
+  <path d="M578 373.5 L586 369.2 M578 373.5 L586 377.8" stroke="#b43a32" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  <path d="M552.7 344.8 L556.8 334.7" stroke="none" fill="none" marker-end="url(#train-arrow)"/>
+  <path d="M633.0 280.3 L642.8 273.9" stroke="none" fill="none" marker-end="url(#train-arrow)"/>
+</svg>
+
+<button class="citybtn chengdu" onclick="openCity('chengdu')" aria-label="Apri Chengdu"><div class="dot"></div><small>成都 · Chengdu</small></button>
+<button class="citybtn zhang" onclick="openCity('zhangjiajie')" aria-label="Apri Zhangjiajie"><div class="dot"></div><small>张家界 · Zhangjiajie</small></button>
+<button class="citybtn chong" onclick="openCity('chongqing')" aria-label="Apri Chongqing"><div class="dot"></div><small>重庆 · Chongqing</small></button>
+<button class="citybtn xian" onclick="openCity('xian')" aria-label="Apri Xi'an"><div class="dot"></div><small>西安 · Xi'an</small></button>
+<button class="citybtn beijing" onclick="openCity('beijing')" aria-label="Apri Beijing"><div class="dot"></div><small>北京 · Beijing</small></button>
+</div>
+</div>
+
+<div class="mapcontrols" aria-label="Controlli mappa">
+  <button class="mapzoom" onclick="changeMapZoom(-0.16)" aria-label="Riduci zoom">−</button>
+  <button class="mapreset" onclick="resetMapZoom()" aria-label="Ripristina zoom">ITINERARIO</button>
+  <button class="mapzoom" onclick="changeMapZoom(0.16)" aria-label="Aumenta zoom">+</button>
+</div>
+<div class="maphint">zoom</div>
+
+<div class="routekey"><b>5 TAPPE</b> · direzione</div>
+<div class="legend"><span>━ treno</span>&nbsp;&nbsp; <span style="color:#687a80">┄ volo</span></div>
+</div></div>
+
+<div class="bottom">
+  <section class="timeline">
+    <div class="timeline-head">
+      <div>
+        <div class="section-note">Il viaggio</div>
+        <h3>Itinerario generale</h3>
+      </div>
+      <div class="section-note">14 → 29 OTT</div>
+    </div>
+    <div class="timeline-list">
+      <div class="trow"><div class="time">14/10</div><div class="cityname">Orte → Beijing</div><div>15:29 → Fiumicino · 20:30 volo per Beijing</div></div>
+      <div class="trow"><div class="time">15/10</div><div class="cityname">Beijing → Chengdu</div><div>12:45 arrivo · 14:15 volo · 17:15 Chengdu</div></div>
+      <div class="trow"><div class="time">16–18/10</div><div class="cityname">Chengdu</div><div>giornata libera · Panda Base · 18/10 Leshan Giant Buddha</div></div>
+      <div class="trow"><div class="time">19/10</div><div class="cityname">Chengdu → Zhangjiajie</div><div><b>12:07 → 17:15 · treno già prenotato</b> · hotel → stazione ~10:15–10:30</div></div>
+      <div class="trow"><div class="time">20–21/10</div><div class="cityname">Zhangjiajie</div><div>National Forest Park · Tianmen Mountain / Porta del Paradiso</div></div>
+      <div class="trow"><div class="time">22/10</div><div class="cityname">Zhangjiajie → Chongqing</div><div><b>09:16 → 11:45 · treno già prenotato</b> · Chongqing · 22:09 sleeper per Xi'an</div></div>
+      <div class="trow"><div class="time">23–24/10</div><div class="cityname">Xi'an</div><div>06:15 arrivo · Terracotta Army · Mura · Bell/Drum Tower · Muslim Quarter</div></div>
+      <div class="trow"><div class="time">25/10</div><div class="cityname">Xi'an → Beijing</div><div><b>12:04 → 16:32 · treno già fissato</b> · hotel · prima esplorazione</div></div>
+      <div class="trow"><div class="time">26–28/10</div><div class="cityname">Beijing</div><div>Forbidden City · Tian'anmen · Mutianyu · Temple of Heaven · hutong</div></div>
+      <div class="trow"><div class="time">29/10</div><div class="cityname">Beijing → Italia</div><div>13:25 · partenza, senza programma turistico</div></div>
+    </div>
+  </section>
+
+  <aside class="check">
+    <div class="check-head">
+      <div>
+        <div class="section-note">Da tenere sotto controllo</div>
+        <h3>Reminder</h3>
+      </div>
+      <span class="check-progress" id="checkProgress">0 / 12</span>
+    </div>
+    <div id="quickcheck"></div>
+  </aside>
+</div></div>
+</main>
+
+<div class="modal" id="modal" onclick="if(event.target===this)closeCity()"><div class="panel">
+<div class="phead"><div class="pheadrow"><div><div class="ey" id="mDates"></div><h2 id="mTitle"></h2><p id="mSub"></p></div><button class="close" onclick="closeCity()">×</button></div></div>
+<div class="tabs" id="cityTabs">
+<button class="active" onclick="ctab('program',this)">Programma</button><button onclick="ctab('places',this)">Luoghi</button><button onclick="ctab('food',this)">Mangiare</button><button id="duckTab" style="display:none" onclick="ctab('duck',this)">Anatra</button><button onclick="ctab('hotel',this)">Hotel</button><button onclick="ctab('transport',this)">Trasporti</button><button onclick="ctab('book',this)">Prenotazioni</button>
+</div>
+<div class="pbody" id="cityBody"></div>
+</div></div>
+
+<script>
+const data={
+chengdu:{
+title:"成都 · Chengdu",dates:"15–19 OTTOBRE · 4 NOTTI",sub:"Prima base del viaggio",
+program:`<div class="cards">
+<div class="mini"><span class="tag ok">15 OCT · confermato</span><h4>Arrivo</h4><p>17:15 arrivo a Chengdu. Trasferimento aeroporto → hotel da decidere sul posto. Sera libera: prima esplorazione + shopping abbigliamento/outdoor + cena.</p></div>
+<div class="mini"><span class="tag free">16 OCT · libero</span><h4>Giornata completamente libera</h4><p>Nessuna attività fissata. Scegli dal catalogo della città sul momento.</p></div>
+<div class="mini"><span class="tag ok">17 OCT · confermato</span><h4>🐼 Panda Base</h4><p>Mattina all'apertura; pomeriggio libero. L'orario ufficiale marzo–ottobre è 07:30–12:00 per la fascia mattutina.</p></div>
+<div class="mini"><span class="tag ok">18 OCT · confermato</span><h4>🗿 Leshan Giant Buddha</h4><p>Escursione giornaliera. Treno Chengdu East ↔ Leshan, ingresso e eventuale barca da prenotare.</p></div>
+<div class="mini"><span class="tag ok">19 OCT · TRENO GIÀ PRENOTATO</span><h4>Chengdu → Zhangjiajie</h4><p><b>12:07 Chengdudong / 成都东站 → 17:15 Zhangjiajiexi / 张家界西站</b>.</p><p>Per arrivare in stazione circa 1 ora prima: <b>stazione ~11:07 → partenza hotel ~10:15–10:30</b>, da adattare al traffico/Didi.</p></div></div>`,
+places:`<div class="cards">
+<div class="mini"><h4>People's Park · 人民公园</h4><div class="addr">9 Citang St, Qingyang District · 青羊区祠堂街9号</div><div class="cn">Metro: People's Park / 人民公园</div><p>Parco storico, lago, vita locale e Heming Teahouse. Ottimo per vedere il Chengdu quotidiano.</p></div>
+<div class="mini"><h4>Heming Teahouse · 鹤鸣茶社</h4><div class="addr">Dentro People's Park · Citang St · 祠堂街</div><div class="cn">人民公园内 · 鹤鸣茶社</div><p>Tè con gaiwan e atmosfera tradizionale. Punto da cercare direttamente all'interno del parco.</p></div>
+<div class="mini"><h4>Kuanzhai Alley · 宽窄巷子</h4><div class="addr">127 Changshun Upper St, Qingyang District · 青羊区长顺上街127号</div><div class="cn">宽窄巷子</div><p>Le tre vie storiche Kuan, Zhai e Jing. Negozi, cortili, teahouse e street food.</p></div>
+<div class="mini"><h4>Tianfu Square · 天府广场</h4><div class="addr">86 Renmin South Rd, Qingyang District · 青羊区人民南路一段86号</div><div class="cn">Metro: Tianfu Square · Line 1/2</div><p>Centro simbolico della città; fontane e skyline particolarmente interessanti la sera.</p></div>
+<div class="mini"><h4>Chunxi Road · 春熙路</h4><div class="addr">Chunxi Rd, Jinjiang District · 锦江区春熙路</div><div class="cn">Metro: Chunxi Road · Line 2/3</div><p>Shopping e centro urbano. Collegata direttamente alla zona Taikoo Li.</p></div>
+<div class="mini"><h4>Taikoo Li · 太古里</h4><div class="addr">8 Zhongshamao St, Jinjiang District · 锦江区中纱帽街8号</div><div class="cn">太古里</div><p>Complesso open-air di negozi, brand, ristoranti e architettura contemporanea.</p></div>
+<div class="mini"><h4>IFS · 成都IFS</h4><div class="addr">1 Hongxing Rd 3rd Section, Jinjiang District · 锦江区红星路三段1号</div><div class="cn">成都国际金融中心 · LG1 / 1F</div><p>Da vedere soprattutto per il famoso panda gigante che scala l'edificio.</p></div>
+<div class="mini"><h4>Wuhou Shrine · 武侯祠</h4><div class="addr">231 Wuhouci Ave, Wuhou District · 武侯区武侯祠大街231号</div><div class="cn">Metro: 武侯祠 / Jinli · Line 10</div><p>Complesso dei Tre Regni; famoso il corridoio delle pareti rosse. Accanto a Jinli.</p></div>
+<div class="mini"><h4>Jinli Ancient Street · 锦里</h4><div class="addr">231 Wuhouci Ave, Wuhou District · 武侯区武侯祠大街231号附1</div><div class="cn">锦里</div><p>Strada storica ricostruita, lanterne, snack e negozi. Molto interessante dopo il tramonto.</p></div>
+<div class="mini"><h4>Wenshu Monastery · 文殊院</h4><div class="addr">66 Wenshuyuan St, Qingyang District · 青羊区文殊院街66号</div><div class="cn">文殊院 · Metro Line 1</div><p>Monastero buddhista attivo, cortili e quartiere tradizionale.</p></div>
+<div class="mini"><h4>Wangping Street · 望平街</h4><div class="addr">Wangping St, Chenghua/Jinjiang area · 望平街</div><div class="cn">望平街</div><p>Zona lungo il fiume con locali, caffè, negozi e atmosfera serale.</p></div>
+<div class="mini"><h4>Anshun Bridge · 安顺廊桥</h4><div class="addr">Binjiang East Rd, Jinjiang District · 锦江区滨江东路</div><div class="cn">安顺廊桥</div><p>Ponte coperto sul Jin River. Da vedere soprattutto illuminato la sera.</p></div>
+<div class="mini"><h4>Jiuyan Bridge · 九眼桥</h4><div class="addr">Jiuyanqiao area, Jinjiang District · 锦江区九眼桥</div><div class="cn">九眼桥</div><p>Zona nightlife lungo il fiume, utile da combinare con Anshun Bridge.</p></div>
+<div class="mini"><h4>Chengdu Museum · 成都博物馆</h4><div class="addr">1 Xiaohe St, Qingyang District · 青羊区小河街1号</div><div class="cn">成都博物馆 · Tianfu Square</div><p>Museo della storia cittadina. Ingresso gratuito ma prenotazione da verificare.</p></div>
+<div class="mini"><h4>Sichuan Museum · 四川博物院</h4><div class="addr">251 Huanhua South Rd, Qingyang District · 青羊区浣花南路251号</div><div class="cn">四川博物院</div><p>Arte e patrimonio del Sichuan.</p></div>
+<div class="mini"><h4>Qingyang Palace · 青羊宫</h4><div class="addr">9 1st Ring Rd West 2nd Section, Qingyang District · 青羊区一环路西二段9号</div><div class="cn">青羊宫</div><p>Importante tempio taoista, vicino alla zona dei musei.</p></div>
+<div class="mini"><h4>Huanglongxi Ancient Town · 黄龙溪古镇</h4><div class="addr">Huanglongxi Town, Shuangliu District · 双流区黄龙溪镇</div><div class="cn">黄龙溪古镇</div><p>Opzione fuori centro se vuoi aggiungere un'antica città d'acqua.</p></div>
+</div>
+<div class="mini" style="margin-top:12px"><h4>🛍 Shopping sportivo / outdoor</h4>
+<div class="item"><b>CAMEL · CAMEL Outdoor</b><div class="cn">骆驼 / CAMEL</div><div class="addr">牧电路6号附4号 · Qingyang District</div><p>Negozio outdoor. Da tenere come prima ricerca per abbigliamento economico.</p></div>
+<div class="item"><b>CAMEL Outdoor · Longhu Beicheng Tianjie</b><div class="cn">骆驼户外</div><div class="addr">五块石路1号 · 龙湖·北城天街北馆B1层Z2永辉超市 · Jinniu District</div><p>Secondo punto CAMEL individuato; utile se sei già nella zona nord.</p></div>
+<div class="item"><b>Li-Ning · 春熙路</b><div class="cn">李宁</div><div class="addr">春熙路南段19号 · Jinjiang District</div><p>Abbigliamento e scarpe sportive.</p></div>
+<div class="item"><b>Li-Ning · IFS</b><div class="cn">李宁</div><div class="addr">成都IFS LG1 129/130A · 红星路三段1号</div><p>Comodo da combinare con IFS e Taikoo Li.</p></div>
+<div class="item"><b>Qiaodan Sports · Chunxi Road</b><div class="cn">乔丹体育</div><div class="addr">春熙路东段2号附4 · Jinjiang District</div><p>Brand sportivo cinese; interessante per prezzi e prodotti locali.</p></div>
+<div class="item"><b>Qiaodan Sports · Dashi West Road</b><div class="cn">乔丹体育</div><div class="addr">121 Dashi West Rd · Wuhou District</div><p>Alternativa nella zona Wuhou.</p></div>
+<div class="item"><b>Decathlon · 都会路</b><div class="cn">迪卡侬</div><div class="addr">199 Duhui Rd, Wuhou District · 武侯区都会路199号</div><p>Scelta pratica per abbigliamento e accessori outdoor economici.</p></div>
+</div>`,
+food:`<div class="mini"><span class="tag ok">LOCAL · da provare</span><h4>Wangji Tese Guokui · 王记特色锅魁</h4><div class="cn">王记特色锅魁（马鞍南路店）</div><div class="addr">成都市金牛区马鞍南路100号 · Ma'an South Road 100</div><p>Specialità locale: guokui croccante ripieno. Da provare 牛肉锅盔 (manzo) e 猪肉锅盔 (maiale); disponibile anche 肥肠粉.</p></div>
+<div class="mini" style="margin-top:12px"><span class="tag ok">LOCAL · da provare</span><h4>Lao Chengdu San Yang Mian · 老成都三样面</h4><div class="cn">老成都三样面（过街楼街店）</div><div class="addr">成都市过街楼街46号附6号、附8号 · Guojielou Street 46</div><p>Noodles tradizionali molto locali. Da cercare: 担担面 (dan dan), 红烧牛肉面 (manzo brasato) e 红油抄手 (wonton piccanti).</p></div>
+<div class="mini" style="margin-top:12px"><span class="tag" style="background:#eee;color:#555">MICHELIN 2027</span><h4>Fine dining · 15 stellati</h4><p>La selezione Michelin 2027 di Chengdu comprende 1 ristorante 3 stelle, 1 da 2 stelle e 13 da 1 stella. </p>
+${michelin()}</div>`,
+hotel:`<div class="mini"><span class="tag ok">HOTEL</span><h4>盛铂·清居国风酒店(春熙路天府广场店)</h4><div class="addr">梓潼街37号 · No. 37 Zitong Street, Chengdu</div><p>Base del soggiorno Chengdu, 15–19 ottobre.</p></div>`,
+transport:`<div class="cards"><div class="mini"><h4>15 OCT</h4><p>Beijing → Chengdu · 14:15 → 17:15.</p></div><div class="mini"><h4>18 OCT · Leshan</h4><p>Chengdu East → Leshan circa 40–60 min di HSR. Treno A/R da scegliere e acquistare.</p></div><div class="mini"><span class="tag ok">19 OCT · PRENOTATO</span><h4>Chengdu → Zhangjiajie</h4><p><b>12:07 Chengdudong / 成都东站 → 17:15 Zhangjiajiexi / 张家界西站</b>.</p><p>Partenza dall’hotel <b>~10:15–10:30</b> per essere in stazione circa 1 ora prima.</p></div></div>`,
+book:`<div class="cards"><div class="mini"><span class="tag todo">DA PRENOTARE</span><h4>Panda Base</h4><p>Prenotazione nominativa online. Marzo–ottobre: ingresso mattutino 07:30–12:00; prenotazione fino a 14 giorni prima.</p></div><div class="mini"><span class="tag todo">DA PRENOTARE</span><h4>Leshan</h4><p>Treno A/R · ingresso Giant Buddha · eventuale boat · verificare ultimo treno di ritorno.</p></div><div class="mini"><span class="tag ok">GIÀ PRENOTATO</span><h4>Chengdu → Zhangjiajie</h4><p><b>19/10 · 12:07 Chengdudong → 17:15 Zhangjiajiexi</b>.</p><p>Trasferimento hotel → Chengdu East: partenza indicativa <b>~10:15–10:30</b> per arrivare alla stazione verso le <b>11:07</b>.</p></div></div>`
+},
+zhangjiajie:{
+title:"张家界 · Zhangjiajie",dates:"19–23 OTTOBRE · 4 NOTTI",sub:"Wulingyuan · base per il parco nazionale",
+program:`<div class="cards">
+<div class="mini"><span class="tag ok">19 OCT · TRENO PRENOTATO</span><h4>Chengdu → Zhangjiajie</h4><p><b>12:07 · Chengdudong → 17:15 · Zhangjiajiexi</b>.</p><p>Arrivo alle 17:15. Giornata volutamente tranquilla: trasferimento in hotel, sistemazione, cena e passeggiata a Wulingyuan senza aggiungere visite impegnative.</p></div>
+<div class="mini"><span class="tag ok">20 OCT · PARCO</span><h4>🌄 Zhangjiajie National Forest Park · giornata intera</h4><p>Prima giornata piena dedicata al cuore del parco di Wulingyuan. L'obiettivo è entrare presto e dedicare la giornata ai grandi punti panoramici del settore scelto.</p><p class="small">Il parco risulta aperto 07:30–17:00; ultimo ingresso indicato alle 16:00. Il biglietto core può essere valido 4 giorni. </p></div>
+<div class="mini"><span class="tag ok">21 OCT · PARCO + TIANMEN</span><h4>🏔️ Mattina nel parco → pomeriggio Tianmen</h4><p><b>Prima metà:</b> ritorno nel National Forest Park per completare la visita / vedere un'altra zona.</p><p><b>Seconda metà:</b> trasferimento verso Zhangjiajie città e visita a <b>Tianmen Mountain · 天门山</b>, con la Porta del Paradiso.</p><p class="small">Per Tianmen le informazioni operative 2026 indicano apertura dalle 08:00 e vendita biglietti 07:30–16:00; gli orari e il percorso dipendono dalla linea operativa del giorno. </p></div>
+<div class="mini"><span class="tag free">22 OCT · LIBERO DA COSTRUIRE</span><h4>Giornata libera / eventuale completamento</h4><p>Non fissiamo ancora nulla. Può diventare una seconda giornata piena nel parco, una zona non vista, una giornata più rilassata o un'alternativa in base al meteo.</p></div>
+<div class="mini"><span class="tag ok">23 OCT</span><h4>Partenza verso Chongqing</h4><p>Mattina / giorno a disposizione prima della tappa a Chongqing e dello sleeper serale verso Xi'an.</p></div>
+</div>`,
+places:`<div class="cards">
+<div class="mini"><h4>Zhangjiajie National Forest Park · 张家界国家森林公园</h4><div class="addr">金鞭路279号 · 金鞭路279号, 武陵源区, 张家界</div><p>Il grande parco delle colonne di quarzite. È il nucleo delle giornate 20–21 e consente di muoversi con shuttle interni e percorsi a piedi.</p></div>
+<div class="mini"><h4>Wulingyuan East Gate · 武陵源东门</h4><div class="addr">武陵源标志门 / Wulingyuan Landmark Gate</div><p>È la porta più pratica rispetto al vostro hotel. Il punto d'accesso è circa 1 km dall'hotel secondo le informazioni disponibili. </p></div>
+<div class="mini"><h4>Yuanjiajie · 袁家界</h4><div class="addr">武陵源风景名胜区内</div><p>Area celebre per le colonne rocciose e i panorami associati al paesaggio di Avatar. Da inserire nella prima giornata del parco.</p></div>
+<div class="mini"><h4>Tianzi Mountain · 天子山</h4><div class="addr">武陵源核心景区北部 · 天子山景区</div><p>Rilievi panoramici e mare di nuvole. Può essere combinata con Yuanjiajie tramite gli shuttle del parco. </p></div>
+<div class="mini"><h4>Tianmen Mountain · 天门山</h4><div class="addr">大庸路 · Dayong Road, Yongding District, Zhangjiajie</div><p>La seconda metà del 21 ottobre è dedicata qui: cable car, montagna, passerelle e soprattutto Tianmen Cave / Porta del Paradiso. </p></div>
+<div class="mini"><h4>Tianmen Cave · 天门洞</h4><div class="addr">天门山景区 · Tianmen Mountain Scenic Area</div><p>La grande apertura naturale nella parete della montagna; accessibile secondo il percorso operativo scelto per quel giorno.</p></div>
+</div>`,
+food:`<div class="cards">
+<div class="mini"><h4>Wulingyuan · 武陵源</h4><p>La zona attorno all'hotel è comoda per cenare senza rientrare a Zhangjiajie città. Costruiamo qui una lista di ristoranti locali con indirizzo cinese.</p></div>
+<div class="mini"><h4>湘西 / Xiangxi cuisine</h4><p>Da cercare: cucina dello Hunan occidentale, carni affumicate, piatti piccanti e specialità locali. Lista ristoranti da aggiungere.</p></div>
+</div>`,
+hotel:`<div class="mini"><span class="tag ok">HOTEL · CONFERMATO</span><h4>Tianchong Yunhai Resort Hotel (Wulingyuan National Forest Park)</h4><div class="cn">天崇云海度假酒店（武陵源国家森林公园店）</div><div class="addr">武陵大道175号, 武陵源区, 张家界, 湖南 427400, 中国<br>175 Wuling Avenue, Wulingyuan District, Zhangjiajie</div><p>Base per le 4 notti. Posizione centrale a Wulingyuan, vicina al National Forest Park e alla East Gate. Le fonti indicano circa 680 m dalla stazione bus Wulingyuan e circa 1 km dal Landmark Gate; Zhangjiajie West è circa 25 km. </p><p class="small">Nome da mostrare su Didi/Amap: <b>天崇云海度假酒店（武陵源国家森林公园店）</b>.</p></div>`,
+transport:`<div class="cards">
+<div class="mini"><span class="tag ok">PRENOTATO</span><h4>Chengdu East → Zhangjiajie West</h4><div class="cn">成都东站 → 张家界西站</div><p><b>12:07 → 17:15 · 19 ottobre</b>.</p><p>Per arrivare circa 1 ora prima: <b>stazione ~11:07 → partenza hotel ~10:15–10:30</b>, da adattare al traffico/Didi.</p></div>
+<div class="mini"><h4>Zhangjiajie West → Hotel</h4><div class="cn">张家界西站 → 天崇云海度假酒店</div><p>Circa 25 km dal hotel. Dopo l'arrivo delle 17:15: trasferimento in taxi/Didi o servizio dell'hotel; non serve pianificare una visita quella sera. </p></div>
+<div class="mini"><h4>20–21 OCT · dentro il parco</h4><p>Gli shuttle/环保车 del parco collegano le varie aree. Per il 20 partenza dall'hotel presto; per il 21 uscita dal parco a metà giornata e trasferimento verso Tianmen.</p></div>
+<div class="mini"><span class="tag ok">22 OCT · PRENOTATO</span><h4>Zhangjiajie West → Chongqing East</h4><div class="cn">张家界西站 → 重庆东站</div><p><b>09:16 → 11:45</b>. Per essere in stazione alle ~08:16, partenza dall'hotel indicativamente <b>~07:20–07:30</b>.</p></div>
+<div class="mini"><h4>21 OCT · Tianmen</h4><p>Dal Wulingyuan area verso Zhangjiajie città. La stazione della cableway è su Dayong Road; per la seconda metà della giornata bisogna considerare il tempo di trasferimento. </p></div>
+</div>`,
+book:`<div class="cards">
+<div class="mini"><span class="tag ok">GIÀ PRENOTATO</span><h4>Treno 19/10</h4><p>Chengdudong → Zhangjiajiexi · 12:07 → 17:15.</p></div>
+<div class="mini"><span class="tag todo">DA PRENOTARE / VERIFICARE</span><h4>Wulingyuan National Forest Park</h4><p>Verificare il biglietto core di 4 giorni e scegliere gli eventuali extra: Bailong Elevator, Tianzi Cableway, Yangjiajie Cableway, Ten-Mile Gallery train. Le tariffe e combinazioni cambiano; la pagina turistica locale indica il biglietto base e le combinazioni. </p></div>
+<div class="mini"><span class="tag todo">DA PRENOTARE</span><h4>Tianmen Mountain · 21/10</h4><p>Biglietto/linea operativa da scegliere in base alla disponibilità. Le linee della cableway e gli orari possono essere modificati per manutenzione o condizioni operative, quindi va ricontrollato vicino alla data. </p></div>
+</div>`
+},
+chongqing:{
+title:"重庆 · Chongqing",dates:"22 OTTOBRE · TAPPA DIURNA",sub:"Toccata e fuga · 11:45 arrivo → 22:09 sleeper",
+program:`<div class="cards">
+<div class="mini"><span class="tag ok">22 OCT · 11:45</span><h4>Arrivo a Chongqing East</h4><div class="cn">重庆东站</div><p>Arrivo <b>11:45</b>. Bagagli e partenza immediata verso il centro.</p></div>
+<div class="mini"><span class="tag ok">POMERIGGIO</span><h4>🏙️ Chongqing essenziale</h4><p><b>1 · Jiefangbei</b> → centro e simbolo della città.<br><b>2 · Liziba</b> → vedere la metro che attraversa il palazzo.<br><b>3 · Hongyadong + Qiansimen</b> → chiusura della giornata con skyline e luci.</p></div>
+<div class="mini"><span class="tag free">TEMPO LIBERO</span><h4>🍲 Cena</h4><p>Hotpot Chongqing o street food. Non fissiamo ancora il ristorante: la tappa è già molto compressa.</p></div>
+<div class="mini"><span class="tag ok">22:09 · TRENO PRENOTATO</span><h4>Chongqing West → Xi'an</h4><div class="cn">重庆西站 → 西安</div><p><b>22:09 → 06:15</b> del 23 ottobre. Partenza dal centro con largo margine.</p></div>
+</div>
+<div class="note"><b>Obiettivo della giornata:</b> vedere il volto più riconoscibile di Chongqing senza trasformarla in una maratona. Hongyadong, Jiefangbei e Liziba sono sufficienti per questa tappa; altre zone restano nel catalogo ma non nel programma fisso.</div>`,
+places:`<div class="cards">
+<div class="mini"><h4>Jiefangbei · 解放碑步行街</h4><div class="addr">Jiefangbei Pedestrian Street · 解放碑步行街, Yuzhong District</div><p>Cuore commerciale e simbolico del centro. Da usare come punto di partenza per la passeggiata.</p></div>
+<div class="mini"><h4>Liziba · 李子坝轻轨站</h4><div class="addr">Liziba Zhengjie Station · 李子坝正街站, Yuzhong District</div><p>La famosa Linea 2 entra letteralmente in un edificio residenziale. Fermata fotografica breve.</p></div>
+<div class="mini"><h4>Hongyadong · 洪崖洞</h4><div class="addr">88 Jialingjiang Binjiang Rd · 渝中区嘉陵江滨江路88号</div><p>Complesso verticale illuminato sul fiume. Da vedere soprattutto nel passaggio verso la sera.</p></div>
+<div class="mini"><h4>Qiansimen Bridge · 千厮门大桥</h4><div class="addr">Qiansimen Bridge · 千厮门嘉陵江大桥</div><p>Punto panoramico utile per vedere Hongyadong dall'esterno e fotografare lo skyline.</p></div>
+<div class="mini"><h4>Resto del catalogo</h4><p>Ciqikou, Shibati, Yangtze Cableway, Nanshan e altri quartieri rimangono opzioni, ma <b>non li mettiamo nel programma del 22</b> per non comprimere troppo la giornata.</p></div>
+</div>`,
+food:`<div class="cards">
+<div class="mini"><h4>重庆火锅 · Chongqing Hot Pot</h4><div class="cn">重庆火锅</div><p>È la scelta naturale per la cena: base piccante al burro, piatti ordinati al tavolo e cucina molto locale.</p></div>
+<div class="mini"><h4>小面 · Xiaomian</h4><div class="cn">重庆小面</div><p>Noodles piccanti di Chongqing; opzione rapida se il tempo prima del treno è poco.</p></div>
+<div class="mini"><h4>Bayi Food Street · 八一路好吃街</h4><div class="addr">Bayi Road · 八一路, Jiefangbei area</div><p>Zona pratica per assaggiare più snack senza impegnarsi in una cena lunga.</p></div>
+</div>
+<div class="note">Per ora lasciamo i ristoranti specifici in sospeso: con una sola giornata e un treno alle 22:09 è meglio scegliere più avanti in base alla posizione reale e agli orari.</div>`,
+hotel:`<div class="mini"><span class="tag free">NESSUNA NOTTE</span><h4>Nessun hotel a Chongqing</h4><p>È una tappa giornaliera. La notte si trascorre sul treno verso Xi'an.</p></div>`,
+transport:`<div class="cards">
+<div class="mini"><span class="tag ok">PRENOTATO</span><h4>Zhangjiajie West → Chongqing East</h4><div class="cn">张家界西站 → 重庆东站</div><p><b>09:16 → 11:45 · 22 ottobre</b>.</p></div>
+<div class="mini"><span class="tag info">STAZIONE</span><h4>Chongqing East</h4><div class="cn">重庆东站</div><p>Arrivo alle 11:45. Per una tappa così breve conviene andare direttamente verso il centro, senza aggiungere una sosta inutile in stazione.</p></div>
+<div class="mini"><span class="tag ok">PRENOTATO</span><h4>Chongqing West → Xi'an</h4><div class="cn">重庆西站 → 西安</div><p><b>22:09 → 06:15</b>. Partenza dal centro indicativamente <b>~21:00</b> per mantenere circa un'ora di margine in stazione.</p></div>
+</div>
+<div class="note"><b>Regola adottata per tutti i treni:</b> punto di riferimento = arrivo in stazione circa <b>1 ora prima</b>. L'orario di partenza dall'hotel/attrazione verrà quindi calcolato a ritroso considerando il trasferimento.</div>`,
+book:`<div class="cards">
+<div class="mini"><span class="tag ok">PRENOTATO</span><h4>22/10 · Zhangjiajie → Chongqing</h4><p>09:16 → 11:45 · Zhangjiajiexi → Chongqing East.</p></div>
+<div class="mini"><span class="tag ok">PRENOTATO</span><h4>22/10 · Chongqing → Xi'an</h4><p>22:09 → 06:15 · Chongqing West → Xi'an · treno notturno.</p></div>
+</div>`
+},
+xian:{title:"西安 · Xi'an",dates:"23–25 OTTOBRE · 2 NOTTI",sub:"Arrivo 06:15 · Terracotta Army subito · mura in bici · partenza 25/10",
+program:`<div class="cards">
+<div class="mini"><span class="tag ok">23 OCT · ARRIVO 06:15</span><h4>Esercito di Terracotta subito</h4><p>Arrivate con lo sleeper alla stazione di Xi'an. L'idea è sfruttare la mattina: niente passaggio in hotel prima della visita. Trasferimento diretto verso il museo, così siete già sul posto all'apertura e prima delle fasce più affollate.</p></div>
+<div class="mini"><span class="tag ok">08:30–11:30</span><h4>Terracotta Army</h4><p>Visita delle Fosse 1, 2 e 3 + sala espositiva. Considerare circa 2–3 ore sul sito.</p></div>
+<div class="mini"><span class="tag free">~12:00–13:00</span><h4>Pranzo locale</h4><p>Qualcosa di tipico nei dintorni / lungo il rientro: biangbiang mian, roujiamo o paomo.</p></div>
+<div class="mini"><span class="tag ok">~14:00</span><h4>Hotel · doccia · sistemazione</h4><p>Check-in al Mcsrh Hotel, pausa dopo la notte sul treno e poi si riparte.</p></div>
+<div class="mini"><span class="tag ok">~16:00–18:30</span><h4>Mura di Xi'an in bici</h4><p>Ingresso consigliato da Yongningmen / Porta Sud. Giro nel tardo pomeriggio, luce calda e possibilità di arrivare al tramonto.</p></div>
+<div class="mini"><span class="tag free">SERA</span><h4>Muslim Quarter</h4><p>Bell Tower / Drum Tower e street food del Quartiere Musulmano, senza programma rigido.</p></div>
+<div class="mini"><span class="tag free">24 OCT</span><h4>Seconda giornata più libera</h4><p>Bell Tower, Drum Tower, Muslim Quarter, Yongxingfang e altri luoghi del centro da scegliere in base a energie e voglia.</p></div>
+<div class="mini"><span class="tag ok">25 OCT · 12:04</span><h4>Xi'an North → Beijing West</h4><p>Treno già fissato · arrivo a Beijing West alle 16:32.</p></div>
+</div>`,
+places:`<div class="cards">
+<div class="mini"><h4>Terracotta Army · 秦始皇帝陵博物院（兵马俑）</h4><p><b>Indirizzo:</b> Lintong District, Xi'an · 西安市临潼区秦始皇帝陵博物院. Museo archeologico dell'esercito di Qin; prenotazione nominativa consigliata/necessaria.</p></div>
+<div class="mini"><h4>Xi'an City Wall · 西安城墙</h4><p><b>Ingresso consigliato:</b> Yongningmen / 永宁门, South Street · 西安市碑林区南大街永宁门. Circuito completo circa 13,7 km; in bici è il modo più piacevole per farlo.</p></div>
+<div class="mini"><h4>Bell Tower · 西安钟楼</h4><p><b>Indirizzo:</b> Zhonglou, Beilin District · 西安市碑林区钟楼. Punto centrale della città murata, utile anche come riferimento per il Muslim Quarter.</p></div>
+<div class="mini"><h4>Drum Tower · 西安鼓楼</h4><p><b>Indirizzo:</b> 74 Beiyuanmen · 西安市莲湖区北院门74号. Accanto al Quartiere Musulmano.</p></div>
+<div class="mini"><h4>Muslim Quarter · 回民街 / 北院门</h4><p><b>Zona:</b> Beiyuanmen / Xiyangshi · 北院门、洒金桥一带. Street food, vicoli e cucina Hui; meglio girarlo la sera.</p></div>
+<div class="mini"><h4>Yongxingfang · 永兴坊</h4><p><b>Indirizzo:</b> 15 Dongxin Street · 西安市新城区东新街15号. Alternativa più ordinata al Muslim Quarter per assaggiare specialità dello Shaanxi.</p></div>
+</div>`,
+food:`<div class="cards">
+<div class="mini"><h4>Fanji Roujiamo · 樊记腊汁肉</h4><p><b>Indirizzo:</b> Zhubashi Street · 西安市碑林区竹笆市7号附近. Posto semplice per il <b>roujiamo</b>, il panino locale con carne brasata. Da provare anche con liangpi.</p></div>
+<div class="mini"><h4>Biangbiang Mian · biangbiang面</h4><p><b>Indirizzo:</b> 80 Nanyuanmen · 西安市碑林区南院门80号. Scelta pratica per provare i grandi noodles “a cintura” tipici dello Shaanxi; ordine consigliato: 油泼biangbiang面.</p></div>
+<div class="mini"><h4>Muslim Quarter · 北院门回民街</h4><p><b>Zona:</b> Xiyangshi / Beiyuanmen · 西安市莲湖区西羊市、北院门. Non serve fissare un ristorante: scegliete una bancarella affollata e provate <b>羊肉串</b>, <b>牛肉夹馍</b>, <b>凉皮</b> o <b>羊肉泡馍</b>.</p></div>
+</div>
+<div class="mini" style="margin-top:10px"><b>Piatti da tenere a mente:</b> 肉夹馍 roujiamo · biangbiang面 biangbiang mian · 羊肉泡馍 yangrou paomo · 凉皮 liangpi · 羊肉串 spiedini d'agnello. Non serve inseguirli tutti: questi tre indirizzi sono solo “ancore” se non sapete dove andare.</div>`,
+hotel:`<div class="mini"><span class="tag ok">ALLOGGIO</span><h4>Mcsrh Hotel (Xi'an Bell and Drum Tower Branch) · 麦客·尚酒店（西安钟鼓楼店）</h4><p><b>Indirizzo:</b> No. 1 Dongsidao Lane, Beilin District, Xi'an · 西安市碑林区东四道巷1号. Check-in dalle <b>14:00</b>, check-out alle 12:00. La posizione è comoda per le mura: circa 680–700 m secondo le fonti alberghiere.</p></div>`,
+transport:`<div class="cards">
+<div class="mini"><span class="tag ok">23 OCT · ARRIVO</span><h4>Chongqing West → Xi'an</h4><p><b>22/10 22:09 → 23/10 06:15</b> · arrivo a Xi'an dopo il treno notturno. Appena scesi: Didi/taxi diretto verso l'Esercito di Terracotta. È più efficiente che andare prima in hotel.</p></div>
+<div class="mini"><span class="tag ok">23 OCT</span><h4>Terracotta Army → città</h4><p>Dal museo al centro considerate circa 40–60 min in Didi/taxi; con traffico variabile, meglio non fissare un minuto preciso. Dopo pranzo si rientra al Mcsrh per il check-in.</p></div>
+<div class="mini"><span class="tag ok">25 OCT · TRENO FISSATO</span><h4>Xi'an North · 西安北站 → Beijing West · 北京西站</h4><p><b>12:04 → 16:32.</b> Regola del viaggio: essere in stazione circa 1 ora prima. Con circa 30–50 min di trasferimento dal centro, <b>~10:00 partenza dall'hotel</b> è una stima prudente.</p></div>
+</div>`,
+book:`<div class="cards">
+<div class="mini"><span class="tag todo">DA PRENOTARE</span><h4>Terracotta Army</h4><p>Prenotazione nominativa con passaporto, idealmente appena si apre la finestra di prenotazione.</p></div>
+<div class="mini"><span class="tag ok">PRENOTATO</span><h4>25/10 · Xi'an North → Beijing West</h4><p><b>12:04 → 16:32</b> · treno già fissato.</p></div>
+<div class="mini"><span class="tag free">NESSUNA PRENOTAZIONE</span><h4>Mura + bici</h4><p>Per la muraglia l'ingresso è normalmente acquistabile sul posto; il noleggio bici si fa sulle mura. Punto consigliato: Yongningmen / Porta Sud.</p></div>
+</div>`
+
+},
+beijing:{title:"北京 · Beijing",dates:"25–29 OTTOBRE · 4 NOTTI",sub:"Arrivo 25/10 · Città Proibita · Mutianyu · centro storico · partenza 29/10",
+program:`<div class="cards">
+<div class="mini"><span class="tag ok">25 OCT · ARRIVO 16:32</span><h4>Arrivo + sistemazione + prima esplorazione</h4><p>Xi'an North → Beijing West. Dalla stazione trasferimento al <b>Huayun Dingxiang Hotel</b>, check-in e pausa. Prima sera volutamente leggera: <b>Qianmen → hutong → Tian'anmen esterna</b> se avete ancora energie.</p></div>
+<div class="mini"><span class="tag ok">26 OCT · GIORNATA IMPERIALE</span><h4>Tian’anmen + Città Proibita con visita guidata</h4><p><b>08:00 circa Tian’anmen</b> → controlli → <b>Città Proibita</b>. La piazza è gratuita ma va prenotata; è proprio davanti alla Forbidden City. Poi visita guidata del Palace Museum. Per la prima visita ha senso una <b>guida privata o piccolo tour</b>: il complesso è enorme e una guida aiuta a leggere assi, cortili, padiglioni e storia senza vagare a caso. Dopo la visita: <b>Jingshan Park</b> per la vista dall'alto, poi hutong / Shichahai.</p></div>
+<div class="mini"><span class="tag ok">27 OCT · MATTINA–POMERIGGIO</span><h4>Mutianyu Great Wall</h4><p>Partenza molto presto dal centro, arrivo in mattinata. Salita con cable car/chairlift secondo la combinazione scelta, camminata tra le torri e <b>discesa in alpine slide</b>. Mutianyu è una sezione Ming ben conservata e offre anche la pista di slittino alpino. </p></div>
+<div class="mini"><span class="tag free">27 OCT · SERA</span><h4>Rientro + serata tranquilla</h4><p>Dopo la muraglia niente altro di impegnativo: cena, anatra alla pechinese oppure zona Sanlitun / hutong.</p></div>
+<div class="mini"><span class="tag free">28 OCT · ULTIMA GIORNATA</span><h4>Tempio del Cielo + hutong + Wangfujing</h4><p>Mattina al <b>Temple of Heaven</b>. Poi pranzo locale e pomeriggio tra <b>Qianmen / Dashilar</b> e hutong. Se preferite qualcosa di più rilassato: <b>Beihai Park + Shichahai</b>. Sera libera per l'ultima cena.</p></div>
+<div class="mini"><span class="tag ok">29 OCT · PARTENZA</span><h4>Ultime ore + aeroporto</h4><p>Aereo da Beijing alle <b>13:25</b>. Colazione e partenza verso l'aeroporto con buon margine; nessuna visita programmata.</p></div>
+</div>
+<div class="mini" style="margin-top:10px"><b>Logica del soggiorno:</b> 25 sera leggera · 26 Forbidden City guidata · 27 Mutianyu · 28 Beijing storica e hutong · 29 aeroporto.</div>`,
+places:`<div class="cards">
+<div class="mini"><h4>Tian'anmen Square · 天安门广场</h4><p><b>Indirizzo:</b> East Chang'an Avenue, Dongcheng · 东城区东长安街. Piazza monumentale davanti alla Città Proibita. <b>Conviene inserirla il 26/10 prima della Città Proibita</b>: arrivate presto, passate i controlli e poi proseguite verso Meridian Gate / 午门. È gratuita ma richiede prenotazione nominativa 1–7 giorni prima.</p></div>
+<div class="mini"><h4>Forbidden City / Palace Museum · 故宫博物院</h4><p><b>Indirizzo:</b> 4 Jingshan Front Street, Dongcheng · 东城区景山前街4号. Ingresso principale dalla Meridian Gate / 午门. Per la prima visita è una delle attrazioni dove una guida può davvero dare struttura alla giornata.</p></div>
+<div class="mini"><h4>Jingshan Park · 景山公园</h4><p><b>Indirizzo:</b> 44 Jingshan West Street · 西城区景山西街44号. Salita breve fino al punto panoramico sopra la Città Proibita.</p></div>
+<div class="mini"><h4>Temple of Heaven · 天坛公园</h4><p><b>Indirizzo:</b> 1 Tiantan East Road, Dongcheng · 东城区天坛东路1号. Grande complesso rituale Ming; da fare la mattina.</p></div>
+<div class="mini"><h4>Qianmen & Dashilar · 前门大街 / 大栅栏</h4><p><b>Zona:</b> Qianmen Street · 西城区前门大街. Vecchia Pechino commerciale, ottima per passeggiare e fermarsi a mangiare.</p></div>
+<div class="mini"><h4>Shichahai & Hutongs · 什刹海 / 胡同</h4><p><b>Zona:</b> Shichahai, Xicheng · 西城区什刹海. Laghi, vicoli storici e cortili; ideale nel tardo pomeriggio.</p></div>
+<div class="mini"><h4>Mutianyu Great Wall · 慕田峪长城</h4><p><b>Indirizzo:</b> Mutianyu Village, Bohai Town, Huairou · 北京市怀柔区渤海镇慕田峪村. Sezione Ming con torri, cable car e alpine slide. </p></div>
+<div class="mini"><h4>Beihai Park · 北海公园</h4><p><b>Indirizzo:</b> 1 Wenjin Street, Xicheng · 西城区文津街1号. Alternativa rilassata per il 28/10 se non volete aggiungere troppi monumenti.</p></div>
+</div>`,
+food:`<div class="mini"><span class="tag ok">LOCAL · da provare</span><h4>Fangzhuanchang Zhajiangmian · 方砖厂69号炸酱面</h4><div class="cn">方砖厂69号炸酱面</div><div class="addr">69 Fangzhuanchang Hutong, Dongcheng · 东城区方砖厂胡同69号</div><p>Noodles tradizionali con salsa zhajiang. Semplice, economico e molto pechinese: perfetto per un pranzo veloce.</p></div>
+<div class="mini" style="margin-top:12px"><span class="tag ok">LOCAL · da provare</span><h4>Niujie · 牛街</h4><div class="cn">牛街回民街区</div><div class="addr">Niujie, Xicheng · 西城区牛街</div><p>Quartiere Hui storico: spiedini di agnello, shaobing, manzo/agnello, jiaozi e snack halal. Buona zona per una cena informale.</p></div>
+<div class="mini" style="margin-top:12px"><span class="tag ok">LOCAL · snack</span><h4>Huguosi Snacks · 护国寺小吃</h4><div class="cn">护国寺街小吃</div><div class="addr">Huguosi Street, Xicheng · 西城区护国寺街</div><p>Per assaggiare diversi snack tradizionali di Pechino senza impegnare una serata intera.</p></div>
+<div class="mini" style="margin-top:12px"><span class="tag" style="background:#eee;color:#555">MICHELIN 2026</span><h4>Fine dining · 32 stellati</h4><p>La selezione Michelin 2026 comprende 2 ristoranti ★★★, 6 ★★ e 24 ★. Come per Chengdu, qui sotto trovi una selezione ampia ma leggibile, con nome cinese, cucina, indirizzo e fascia di prezzo Michelin.</p>
+${michelinBeijing()}</div>`,
+
+duck:`<div class="cards">
+<div class="mini"><span class="tag ok">LOCAL · ¥¥</span><h4>Siji Minfu · 四季民福</h4><div class="cn">四季民福烤鸭店</div><div class="addr">Filiali in centro; particolarmente comoda la zona della Città Proibita · 东城区故宫周边</div><p>La scelta da tenere come riferimento se volete una Peking duck molto locale senza andare sul fine dining. <b>Circa ¥250–400 a persona</b>, secondo anatra, contorni e bevande.</p></div>
+<div class="mini"><span class="tag ok">CLASSICO · ¥¥</span><h4>Quanjude · 全聚德（前门店）</h4><div class="cn">全聚德烤鸭店（前门店）</div><div class="addr">32 Qianmen Street, Xicheng · 西城区前门大街32号</div><p>Il grande nome storico dell'anatra alla pechinese. Ha senso se volete vivere la versione più tradizionale e iconica.</p></div>
+<div class="mini"><span class="tag ok">CONTEMPORANEA · ¥¥¥</span><h4>Gastro Esthetics DaDong · 大董</h4><div class="cn">大董烤鸭店</div><div class="addr">1–2F, Nanxincang Business Tower, 22A Dongsi 10th Alley, Dongcheng · 东城区东四十条22号南新仓商务大厦1–2层</div><p>Versione più contemporanea della cucina pechinese. La Michelin indica una Peking duck con anatre di 22 giorni. <b>Circa ¥400–700 a persona.</b></p></div>
+<div class="mini"><span class="tag ok">ELEGANTE · ¥¥¥</span><h4>1949 - Duck de Chine · 1949 - 鸭店</h4><div class="cn">1949鸭店</div><div class="addr">98 Jinbao Street, Dongcheng · 东城区金宝街98号</div><p>Ambiente più elegante, corte storica e duck cotta su legno di dattero. È anche una selezione Michelin nella fascia ¥¥¥. <b>Circa ¥500–900 a persona.</b></p></div>
+<div class="mini"><span class="tag ok">GASTRONOMICA · ¥¥¥¥</span><h4>Xin Rong Ji · 新荣记（Xinyuan South Road）</h4><div class="cn">新荣记（新源南路）</div><div class="addr">1F East Tower, Genesis Beijing, 8 Xinyuan South Road, Chaoyang · 朝阳区新源南路8号北京嘉铭中心东座1层</div><p>Per trasformare l'anatra in una vera esperienza gastronomica: sede Michelin ★★★. La baby Peking duck di 28 giorni è disponibile su preordine. <b>Circa ¥1.000–2.000+ a persona.</b></p></div>
+</div>
+<div class="mini" style="margin-top:10px"><b>Come scegliere:</b> se volete semplicemente provare l'anatra tipica → <b>Siji Minfu</b>; se volete il nome storico → <b>Quanjude</b>; se volete qualcosa di più curato → <b>DaDong / 1949</b>; se volete abbinarla a una vera cena Michelin → <b>Xin Rong Ji</b>.</div>`,
+hotel:`<div class="mini"><span class="tag ok">HOTEL</span><h4>Huayun Dingxiang Hotel (Beijing South Station Niujie Branch) · 华云丁香酒店（北京南站牛街店）</h4><p><b>Base del soggiorno:</b> zona Niujie / Beijing South. Dopo l'arrivo il 25/10: check-in, sistemazione e prima esplorazione. La posizione è utile anche per dedicare una sera alla cucina Hui di Niujie.</p></div>`,
+transport:`<div class="cards">
+<div class="mini"><span class="tag ok">25 OCT · ARRIVO</span><h4>Xi'an North → Beijing West</h4><p><b>12:04 → 16:32</b>. Arrivo a Beijing West, poi trasferimento al Huayun Dingxiang Hotel. Prima sera senza orari rigidi.</p></div>
+<div class="mini"><span class="tag ok">26 OCT</span><h4>Città Proibita</h4><p>Partenza dall'hotel al mattino per arrivare presto all'area della Forbidden City. Meglio non riempire il pomeriggio di troppe attrazioni.</p></div>
+<div class="mini"><span class="tag ok">27 OCT</span><h4>Mutianyu</h4><p><b>Partenza molto presto</b> dal centro, preferibilmente con Didi/tour privato. L'obiettivo è essere a Mutianyu al mattino, prima del grosso del flusso turistico.</p></div>
+<div class="mini"><span class="tag ok">29 OCT · 13:25</span><h4>Aeroporto</h4><p>Partenza dall'hotel in mattinata con ampio margine. Il tempo preciso dipende dall'aeroporto e dal volo; non fissiamo un minuto finché non abbiamo il terminal.</p></div>
+</div>`,
+book:`<div class="cards">
+<div class="mini"><span class="tag todo">DA PRENOTARE</span><h4>Forbidden City</h4><p>Biglietto nominativo e, se decidete di farla con guida, <b>tour privato / piccolo gruppo</b>. La guida è particolarmente utile qui perché il complesso è vastissimo.</p></div>
+<div class="mini"><span class="tag todo">DA PRENOTARE</span><h4>Mutianyu</h4><p>Biglietto + eventuale cable car/chairlift + <b>alpine slide</b>. La sezione offre effettivamente la pista di discesa. </p></div>
+<div class="mini"><span class="tag todo">DA VALUTARE</span><h4>Una cena gastronomica</h4><p>Se volete inserire uno stellato, meglio prenotarne <b>uno solo</b> e lasciare il resto alle trattorie locali.</p></div>
+</div>`,
+michelin_UNUSED:`<div class="cards">
+<div class="mini"><span class="tag ok">★★★ · ¥¥¥¥</span><h4>Xin Rong Ji · 新荣记（Xinyuan South Road）</h4><p><b>Budget indicativo:</b> circa ¥1.000–2.000+ a persona, in base al menu e agli extra.</p><p>Taizhou · 8 Xinyuan South Road, Chaoyang · 朝阳区新源南路8号. Tre stelle Michelin 2026; baby Peking duck disponibile su preordine. </p></div>
+<div class="mini"><span class="tag ok">★★★ · ¥¥¥¥</span><h4>Chao Shang Chao · 潮上潮（Chaoyang）</h4><p><b>Budget indicativo:</b> circa ¥1.000–1.800+ a persona.</p><p>Chaozhou · Chaoyang. Tre stelle Michelin 2026. Cucina Teochew/Chaozhou.</p></div>
+<div class="mini"><span class="tag ok">★★ · ¥¥¥¥</span><h4>Jingji · 京季</h4><p><b>Budget indicativo:</b> circa ¥800–1.500 a persona.</p><p>Beijing cuisine · Cucina pechinese contemporanea.</p></div>
+<div class="mini"><span class="tag ok">★★ · ¥¥¥¥</span><h4>King's Joy · 京兆尹</h4><p><b>Budget indicativo:</b> circa ¥800–1.500 a persona.</p><p>Vegetariana · 2 Wudaoying Hutong, Dongcheng · 东城区五道营胡同2号. Menu degustazione vegetariano in una corte storica vicino al Lama Temple. </p></div>
+<div class="mini"><span class="tag ok">★★ · ¥¥¥¥</span><h4>Lu Shang Lu · 鲁上鲁</h4><p><b>Budget indicativo:</b> circa ¥800–1.500 a persona.</p><p>Shandong · 33 Jinghui Street, Chaoyang · 朝阳区景辉街33号. Cucina dello Shandong, con anche un'interpretazione della duck. </p></div>
+<div class="mini"><span class="tag ok">★★ · ¥¥¥</span><h4>Shanghai Cuisine · 上海菜</h4><p><b>Budget indicativo:</b> circa ¥500–900 a persona.</p><p>Cucina shanghainese · ristorante a 2 stelle Michelin 2026.</p></div>
+<div class="mini"><span class="tag ok">★★ · ¥¥¥¥</span><h4>Lamdre · 岚德</h4><p><b>Budget indicativo:</b> circa ¥700–1.200 a persona.</p><p>Vegetale / vegan contemporaneo · 2 stelle Michelin 2026.</p></div>
+<div class="mini"><span class="tag ok">★★ · ¥¥¥¥</span><h4>Blackswan · 黑天鹅</h4><p><b>Budget indicativo:</b> circa ¥900–1.500 a persona.</p><p>French Contemporary · 2 stelle Michelin 2026.</p></div>
+</div>
+<div class="mini"><span class="tag ok">★ · ¥¥¥</span><h4>Rong Pao · 荣宝</h4><p><b>Budget indicativo:</b> circa ¥300–600 a persona · Sichuan/Yibin. Nuovo ingresso Michelin 2026.</p></div>
+<div class="mini"><span class="tag ok">★ · ¥¥¥</span><h4>Chao Shang Chao (Xicheng) · 潮上潮</h4><p><b>Budget indicativo:</b> circa ¥400–800 a persona · Chaozhou. Nuovo ingresso Michelin 2026.</p></div>
+<div class="mini"><span class="tag ok">★ · ¥¥¥</span><h4>Seventh Son · 福临门</h4><p><b>Budget indicativo:</b> circa ¥400–800 a persona · Cantonese. Nuovo ingresso Michelin 2026.</p></div>
+<div class="mini" style="margin-top:10px">Il MICHELIN Guide 2026 indica <b>32 ristoranti stellati</b> a Beijing: <b>2 con tre stelle, 6 con due stelle e 24 con una stella</b>. I prezzi qui sono fasce indicative per orientarvi, non prezzi garantiti: dipendono da menu, bevande e ordine alla carta. <a href="https://guide.michelin.com/en/beijing-municipality/beijing/restaurants" target="_blank">Vedi selezione Michelin</a></div>`
+
+}
+};
+function michelinBeijing(){let a=[
+["3★","Chao Shang Chao (Chaoyang)","潮上潮（朝阳）","Chao Zhou / 潮州菜","Chaoyang District, Beijing · 北京市朝阳区","Cucina Chaozhou di altissimo livello; una delle due tre stelle Michelin di Beijing."],
+["3★","Xin Rong Ji (Xinyuan South Road)","新荣记（新源南路）","Taizhou / 台州菜","1F East Tower, Genesis Beijing, 8 Xinyuan South Road, Chaoyang · 朝阳区新源南路8号北京嘉铭中心东座1层","Taizhou fine dining; circa ¥1.000–2.000+ a persona. Possibile Peking duck speciale su preordine."],
+["2★","Blackswan","黑天鹅","French Contemporary / 法餐","Beijing · 北京","Cucina francese contemporanea; circa ¥900–1.500 a persona."],
+["2★","Lamdre","岚德","Vegetarian / 素食","Beijing · 北京","Alta cucina vegetale contemporanea; circa ¥700–1.200 a persona."],
+["2★","Jingji","京季","Beijing Cuisine / 京菜","Beijing · 北京","Cucina pechinese contemporanea; circa ¥800–1.500 a persona."],
+["2★","King's Joy","京兆尹","Vegetarian / 素食","2 Wudaoying Hutong, Dongcheng · 东城区五道营胡同2号","Vegetariana di alta cucina in una corte storica; circa ¥800–1.500 a persona."],
+["2★","Lu Shang Lu","鲁上鲁","Shandong / 鲁菜","33 Jinghui Street, Chaoyang · 朝阳区景辉街33号","Cucina dello Shandong; circa ¥800–1.500 a persona."],
+["2★","Shanghai Cuisine","上海菜","Shanghai / 上海菜","Beijing · 北京","Cucina shanghainese; circa ¥500–900 a persona."],
+["1★","Poetry‧Wine (Dongsanhuan Middle Road)","诗酒","Beijing Cuisine / 京菜","61 Dongsanhuan Middle Road, Chaoyang · 朝阳区东三环中路61号","Una delle opzioni Michelin più accessibili: ¥¥ · Beijing Cuisine. Circa ¥200–400 a persona."],
+["1★","The Beijing Kitchen (Jianguo Road)","北京厨房","Cantonese / 粤菜","D6007, 6F, SKP Beijing, 87 Jianguo Road, Chaoyang · 朝阳区建国路87号SKP 6层D6007","¥¥ · Cantonese. Circa ¥200–400 a persona."],
+["1★","Rong Pao","荣宝","Sichuan / 川菜","Beijing · 北京","Specializzato in cucina di Yibin/Sichuan; circa ¥300–600 a persona."],
+["1★","Chao Shang Chao (Xicheng)","潮上潮（西城）","Chao Zhou / 潮州菜","Xicheng District, Beijing · 北京市西城区","Versione più piccola della casa Chao Shang Chao; circa ¥300–600 a persona."],
+["1★","Seventh Son","福临门","Cantonese / 粤菜","Beijing · 北京","Cantonese di alta gamma; circa ¥300–600 a persona."],
+["1★","Gastro Esthetics DaDong","大董","Chinese Contemporary / 中餐现代","22A Dongsi 10th Alley, Dongcheng · 东城区东四十条22号","Cucina cinese contemporanea e Peking duck; circa ¥400–700 a persona."],
+["1★","Sheng Yong Xing (Chaoyang)","盛永兴","Beijing Cuisine / 京菜","Chaoyang District, Beijing · 北京市朝阳区","Cucina pechinese; particolarmente interessante se volete restare sul tema della cucina locale. Circa ¥300–600 a persona."],
+["1★","Xin Rong Ji (Jinrong Street)","新荣记（金融街）","Taizhou / 台州菜","Jinrong Street, Xicheng · 西城区金融街","Altra sede Xin Rong Ji; circa ¥400–800 a persona."],
+["1★","Furong","芙蓉","Hunanese / 湘菜","Beijing · 北京","Cucina Hunan piccante e saporita; circa ¥300–600 a persona."],
+["1★","MO Jasmine","莫斯利安","Beijing Cuisine / 京菜","Beijing · 北京","Cucina pechinese contemporanea; circa ¥300–600 a persona."],
+["1★","Lei Garden (Jinbao Tower)","利苑酒家","Cantonese / 粤菜","Jinbao Tower, Dongcheng · 东城区金宝街","Cantonese; circa ¥300–600 a persona."]
+];
+return a.map(x=>`<div class="mini" style="margin:8px 0"><div style="display:grid;grid-template-columns:45px 1fr;gap:10px"><div class="stars">${x[0]}</div><div><h4 style="margin:0 0 2px">${x[1]}</h4><div class="cn">${x[2]} · ${x[3]}</div><div class="addr" style="margin-top:5px">${x[4]}</div><p style="margin:7px 0 0;font-size:13px;color:#666">${x[5]}</p></div></div></div>`).join("")+`<p class="small">Guida MICHELIN Beijing 2026: 32 ristoranti stellati — 2×3 stelle, 6×2 stelle, 24×1 stella. Le fasce di prezzo Michelin sono un orientamento; il conto reale varia con menu, bevande e ordine alla carta.</p>`}
+function michelin(){let a=[
+["3★","Xin Rong Ji","新荣记","Taizhou / 台州菜","No. 501, 5F, Chinese Financial Center, 33 Jiaozi Avenue, Wuhou","成都市武侯区交子大道33号中国华商金融中心5楼501号","Cucina di Taizhou di altissimo livello; tasting menu e ingredienti premium. Vista sui Twin Towers."],
+["2★","Yu Zhi Lan","玉芝兰","Sichuan / 川菜","No. 1, 24 Changfa Street, Qingyang","成都市青羊区长发街24号1号","Alta cucina Sichuan in ambiente molto riservato; menu degustazione legato alla disponibilità del mercato."],
+["1★","Chaimen Hui","柴门荟","Sichuan / 川菜","2F, China Overseas Uni Elite, 289 Jiaozi Avenue, Wuhou","成都市武侯区交子大道289号中海环宇荟2楼","Sichuan contemporaneo di fascia alta, con ingredienti stagionali e sale private."],
+["1★","Fang Xiang Jing","芳香景","Sichuan / 川菜","No. 1, Courtyard 5, China Railway Ludao Art City, 16 Majia Garden Road, Jinniu","成都市金牛区马家花园路16号中铁鹭岛艺术城5号院1号","Cucina Sichuan tradizionale e nostalgica; solo sale private, ambiente da giardino."],
+["1★","Fu Rong Huang","芙蓉凰","Sichuan / 川菜","3F, 66-16 Guanghuacun Street, Qingyang","成都市青羊区光华村街66-16号3楼","Classici Sichuan molto tecnici, atmosfera vivace e prezzo più accessibile rispetto agli stellati top."],
+["1★","Ma's Kitchen (Jinjiang)","马旺子","Sichuan / 川菜","1 East Kangshi Street, Jinjiang","成都市锦江区东糠市街1号","Storico locale Sichuan vicino a Taikoo Li; cucina tradizionale e atmosfera informale."],
+["1★","Silver Pot","银锅","Sichuan / 川菜","No. 532, 5F, M6 ICP Office Building, 300 Jiaozi Avenue, Wuhou","成都市武侯区交子大道300号悠方ICP写字楼M6座5楼532号","Sichuan moderno con ingredienti internazionali; noto per il piccione affumicato al pepe di Sichuan."],
+["1★","Xu's Cuisine","许家菜","Sichuan / 川菜","No. 1, Block 8, Building & Greenwich Plaza, 1 Wangjiang Road, Wuhou","成都市武侯区望江路1号建筑与格林威治广场8栋1号","Interpretazione moderna della cucina Sichuan; menu dedicato ai 24 profili aromatici."],
+["1★","Young Art · Yong Ya He Xian","漾亚·雍雅合鲜（桐梓林东路）","Sichuan / 川菜","1-1 Tongzilin East Road, Wuhou","成都市武侯区桐梓林东路1号附1号","Pesce di fiume e hot pot Sichuan; locale adatto anche a gruppi."],
+["1★","Co-","合蔻 Co-","Innovative / 创新菜","No. 318, 3F, Chinese Financial Center, 33 Jiaozi Avenue, Wuhou","成都市武侯区交子大道33号中国华商金融中心L3-318号","Solo tasting menu stagionale; cucina creativa con tecniche francesi e ingredienti cinesi."],
+["1★","Mi Xun Teahouse","谧寻茶室","Vegetarian / 素食","Upper House, 81 Bitieshi Street, Jinjiang","成都市锦江区笔帖式街81号博舍酒店内","Fine dining vegetariano in un cortile tranquillo accanto al Daci Temple; anche tè e piatti Sichuan reinterpretati."],
+["1★","Hokkien Cuisine","福满楼","Fujian / 闽菜","No. 326, 3F North Tower, Chinese Financial Center, 33 Jiaozi Avenue, Wuhou","成都市武侯区交子大道33号中国华商金融中心北塔3楼326号","Cucina del Fujian, elegante e delicata; specialità di mare e piatti tradizionali della costa."],
+["1★","The Hall","THE HALL 会馆","European Contemporary / 时尚欧陆菜","Canton Hall, Taikoo Li, 8 Zhongshamao Street, Jinjiang","成都市锦江区中纱帽街8号太古里1120b号","Primo ristorante Louis Vuitton in Cina; cucina europea contemporanea con ingredienti e influenze Sichuan, menu stagionali."],
+["1★","Focus by Bill Yue","Focus by Bill Yue","Innovative / 创新菜","Shop 131A, 1F, M·Cube, 500 Jiaozi Avenue, Wuhou","成都市武侯区交子大道500号M·Cube 1楼131A号","Tasting menu creativo con influenze franco-giapponesi; piatti costruiti attorno al prodotto."],
+["1★","Zinan","梓楠·川菜（桐梓林）","Sichuan / 川菜","No. 8-1, Tongzilin South Road, Wuhou","成都市武侯区桐梓林南路8号附1号","Sichuan di alta cucina ma legata alla tradizione domestica; ingredienti locali e piatti classici reinterpretati."]
+];
+return a.map(x=>`<div class="mini" style="margin:8px 0"><div style="display:grid;grid-template-columns:45px 1fr;gap:10px"><div class="stars">${x[0]}</div><div><h4 style="margin:0 0 2px">${x[1]}</h4><div class="cn">${x[2]} · ${x[3]}</div><div class="addr" style="margin-top:5px">${x[4]}<br>${x[5]}</div><p style="margin:7px 0 0;font-size:13px;color:#666">${x[6]}</p></div></div></div>`).join("")+`<p class="small">Guida MICHELIN Chengdu 2027: 15 ristoranti stellati — 1×3 stelle, 1×2 stelle, 13×1 stella.</p>`} 
+let current=null;
+const MAP_DEFAULT_ZOOM=1.68;
+let mapZoom=MAP_DEFAULT_ZOOM;
+function applyMapZoom(){
+  const stage=document.querySelector(".mapstage");
+  if(!stage)return;
+  const isMobile=window.matchMedia("(max-width:760px)").matches;
+  const base=isMobile?1.52:MAP_DEFAULT_ZOOM;
+  const min=isMobile?1.12:1.18;
+  const max=2.15;
+  mapZoom=Math.max(min,Math.min(max,mapZoom));
+  stage.style.transform=`scale(${mapZoom})`;
+  stage.style.transformOrigin="60% 59%";
+}
+function changeMapZoom(delta){mapZoom+=delta;applyMapZoom()}
+function resetMapZoom(){
+  mapZoom=window.matchMedia("(max-width:760px)").matches?1.52:MAP_DEFAULT_ZOOM;
+  applyMapZoom();
+}
+window.addEventListener("resize",applyMapZoom);
+
+function openCity(id){current=data[id];document.getElementById("mTitle").textContent=current.title;document.getElementById("mDates").textContent=current.dates;document.getElementById("mSub").textContent=current.sub;document.getElementById("cityBody").innerHTML=Object.values(current).filter(v=>typeof v==="string").length?`<div class="ctab active" id="program">${current.program}</div><div class="ctab" id="places">${current.places}</div><div class="ctab" id="food">${current.food}${current.michelin||""}</div><div class="ctab" id="duck">${current.duck||""}</div><div class="ctab" id="hotel">${current.hotel}</div><div class="ctab" id="transport">${current.transport}</div><div class="ctab" id="book">${current.book}</div>`:"";document.getElementById("duckTab").style.display=id==="beijing"?"inline-block":"none";document.getElementById("modal").classList.add("open");document.querySelectorAll(".tabs button").forEach((b,i)=>b.classList.toggle("active",i===0))}
+function closeCity(){document.getElementById("modal").classList.remove("open")}
+function ctab(id,b){document.querySelectorAll(".ctab").forEach(x=>x.classList.remove("active"));document.getElementById(id).classList.add("active");document.querySelectorAll(".tabs button").forEach(x=>x.classList.remove("active"));b.classList.add("active")}
+const checks=["Passaporti/documenti","Voli","Hotel","Treni","Panda Base","Leshan: treno A/R + ingresso","eSIM","VPN","Alipay / WeChat Pay","Assicurazione","Powerbank / adattatore","Fotocamera / batterie / SD"];
+let q=document.getElementById("quickcheck");
+function updateCheckProgress(){
+  const all=[...q.querySelectorAll("input")];
+  const done=all.filter(x=>x.checked).length;
+  document.getElementById("checkProgress").textContent=`${done} / ${all.length}`;
+}
+checks.forEach((x,i)=>{
+  let k="q"+i;
+  let d=document.createElement("div");
+  d.className="checkline";
+  d.innerHTML=`<input type="checkbox" ${localStorage.getItem(k)==="1"?"checked":""}><label>${x}</label>`;
+  d.querySelector("input").onchange=e=>{
+    localStorage.setItem(k,e.target.checked?"1":"0");
+    updateCheckProgress();
+  };
+  q.appendChild(d);
+});
+updateCheckProgress();
+</script>
+</body>
+</html>
